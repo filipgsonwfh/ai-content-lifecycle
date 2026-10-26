@@ -86,7 +86,7 @@ export default function ReviewScreen({ id }) {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(280px, 320px) minmax(0, 1fr) minmax(300px, 350px)', alignItems: 'flex-start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(260px, 320px) minmax(0, 1fr) minmax(280px, 350px)', alignItems: 'flex-start' }}>
         <BriefPanel item={item}/>
 
         <div style={{ padding: 24, minWidth: 0 }}>

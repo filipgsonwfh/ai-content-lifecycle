@@ -123,3 +123,15 @@ input[type="checkbox"] { accent-color: #004a93; width: 16px; height: 16px; curso
 .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 150; display: flex; align-items: center; justify-content: center; padding: 40px; cursor: zoom-out; animation: fade-in .15s ease-out; }
 .lightbox img { max-width: 100%; max-height: 100%; border-radius: 8px; box-shadow: 0 30px 80px rgba(0,0,0,.6); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* Narrow laptops (≤1360px): keep the app bar on one line */
+.appbar-nav button { white-space: nowrap; }
+@media (max-width: 1360px) {
+  .appbar { padding: 0 16px; }
+  .appbar-brand { padding-right: 14px; }
+  .appbar-product-sub { display: none; }
+  .appbar-nav button { padding: 0 10px; font-size: 13px; }
+  .appbar-search { width: 200px; }
+  .appbar-search .placeholder { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .appbar-actions { gap: 6px; }
+}
