@@ -13,7 +13,7 @@ export function ToastProvider({ children }) {
   }, []);
   const toast = useCallback((text, opts = {}) => {
     const id = Math.random().toString(36).slice(2, 8);
-    setToasts(t => [...t.slice(-3), { id, text, kind: opts.kind || 'default', action: opts.action, icon: opts.icon }]);
+    setToasts(t => [...t.slice(-2), { id, text, kind: opts.kind || 'default', action: opts.action, icon: opts.icon }]);
     timers.current[id] = setTimeout(() => dismiss(id), opts.duration || 4200);
     return id;
   }, [dismiss]);

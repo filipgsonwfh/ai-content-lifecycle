@@ -23,6 +23,8 @@ export default function ImageGenScreen({ fromReview }) {
   const [confirmApprove, setConfirmApprove] = useState(false);
   const selected = ig.variant;
   const imgFor = (i) => FERRY_IMAGES[ig.order[i] % FERRY_IMAGES.length];
+  const variantAt = (i) => VARIANTS[ig.order[i] % VARIANTS.length];
+  const cur = variantAt(selected);
   const setSelected = (i) => dispatch({ type: 'IMG_SET', patch: { variant: ((i % 4) + 4) % 4 } });
   const fromItem = fromReview ? state.items.find(i => i.id === fromReview) : null;
 
@@ -30,13 +32,13 @@ export default function ImageGenScreen({ fromReview }) {
   useEffect(() => {
     const onKey = (e) => {
       if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target?.tagName) || e.target?.isContentEditable) return;
-      if (e.ctrlKey || e.metaKey || e.altKey || lightbox || info || confirmApprove) return;
+      if (e.ctrlKey || e.metaKey || e.altKey || lightbox || info || confirmApprove || ig.regenerating) return;
       if (e.key === 'ArrowRight') setSelected(selected + 1);
       if (e.key === 'ArrowLeft') setSelected(selected - 1);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selected, lightbox, info, confirmApprove]);
+  }, [selected, lightbox, info, confirmApprove, ig.regenerating]);
 
   // Regeneration timer lives in this screen; cleaned up on unmount, re-armed on remount.
   useEffect(() => {
@@ -67,7 +69,7 @@ export default function ImageGenScreen({ fromReview }) {
         actions={<>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#fff', border: `1px solid ${SL.ui300}`, borderRadius: 9999, padding: 3, marginRight: 4 }}>
             {VARIANTS.map((v, i) => (
-              <button key={i} onClick={() => setSelected(i)} title={v.label} style={{ width: 32, height: 32, borderRadius: 9999, border: 'none', background: selected === i ? SL.coreBlue : 'transparent', color: selected === i ? '#fff' : SL.ui700, fontSize: 12, fontWeight: 600 }}>{i + 1}</button>
+              <button key={i} onClick={() => setSelected(i)} title={variantAt(i).label} style={{ width: 32, height: 32, borderRadius: 9999, border: 'none', background: selected === i ? SL.coreBlue : 'transparent', color: selected === i ? '#fff' : SL.ui700, fontSize: 12, fontWeight: 600 }}>{i + 1}</button>
             ))}
           </div>
           <Button variant="ghost" icon="arrow-left" onClick={() => navigate(fromItem ? `review/${fromItem.id}` : 'queue')}>{fromItem ? 'Back to brief' : 'Back'}</Button>
@@ -89,9 +91,9 @@ export default function ImageGenScreen({ fromReview }) {
                 </div>
               ) : (
                 <>
-                  <img src={imgFor(selected)} alt={`Variant ${selected + 1}: ${VARIANTS[selected].label}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', cursor: 'zoom-in' }} onClick={() => setLightbox(true)}/>
+                  <img src={imgFor(selected)} alt={`Variant ${selected + 1}: ${cur.label}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', cursor: 'zoom-in' }} onClick={() => setLightbox(true)}/>
                   <div style={{ position: 'absolute', left: 14, bottom: 14, display: 'flex', gap: 6 }}>
-                    <Badge tone="dark">{VARIANTS[selected].label}</Badge>
+                    <Badge tone="dark">{cur.label}</Badge>
                     {approvedThis && <Badge tone="green" icon="check">In DAM</Badge>}
                   </div>
                   <div style={{ position: 'absolute', right: 14, bottom: 14 }}><Badge tone="dark" icon="sparkles">AI-generated · sample</Badge></div>
@@ -116,8 +118,8 @@ export default function ImageGenScreen({ fromReview }) {
                 </div>
                 <div style={{ padding: '6px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 12, color: SL.ui900, fontWeight: 500 }}>{v.label}</div>
-                    <div style={{ fontSize: 11, color: SL.ui600 }}>{v.sub}</div>
+                    <div style={{ fontSize: 12, color: SL.ui900, fontWeight: 500 }}>{variantAt(i).label}</div>
+                    <div style={{ fontSize: 11, color: SL.ui600 }}>{variantAt(i).sub}</div>
                   </div>
                   {selected === i && <Icon name="check" size={12} color={SL.coreBlue}/>}
                 </div>
@@ -147,7 +149,7 @@ export default function ImageGenScreen({ fromReview }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <Card>
             <Eyebrow>Auto-generated metadata</Eyebrow>
-            <KV label="Alt text" value={`Stena Britannica ferry at sea, ${VARIANTS[selected].label.toLowerCase()} light, full side view of the vessel in Stena Line livery.`}/>
+            <KV label="Alt text" value={`Stena Britannica ferry at sea, ${cur.label.toLowerCase()} light, full side view of the vessel in Stena Line livery.`}/>
             <KV label="Filename" value={<code style={{ fontSize: 12 }}>stena-britannica-route-hero-{selected + 1}.jpg</code>}/>
             <KV label="DAM folder" value="vessels/stena-britannica/2026-spring/"/>
             <KV label="Tags" value="vessel, exterior, stena-britannica, route-hero, branded-livery"/>
@@ -170,7 +172,7 @@ export default function ImageGenScreen({ fromReview }) {
           <Card>
             <Eyebrow>Brand checks</Eyebrow>
             {[
-              ['No competitor vessels', 'ok'], ['Stena livery accurate', 'ok'], ['No people identifiable', 'ok'], ['Sea horizon visible', 'ok'], ['No text in image', selected === 2 ? 'warn' : 'ok'],
+              ['No competitor vessels', 'ok'], ['Stena livery accurate', 'ok'], ['No people identifiable', 'ok'], ['Sea horizon visible', 'ok'], ['No text in image', cur.label === 'Overcast' ? 'warn' : 'ok'],
             ].map(([l, s], i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', fontSize: 13 }}>
                 <Icon name={s === 'ok' ? 'check-circle-2' : 'alert-circle'} size={14} color={s === 'ok' ? SL.green700 : SL.orange500}/>
@@ -190,7 +192,7 @@ export default function ImageGenScreen({ fromReview }) {
         </div>
       </div>
 
-      {lightbox && <div className="lightbox" onClick={() => setLightbox(false)}><img src={imgFor(selected)} alt={VARIANTS[selected].label}/></div>}
+      {lightbox && <div className="lightbox" onClick={() => setLightbox(false)}><img src={imgFor(selected)} alt={cur.label}/></div>}
       {info && (
         <Modal title="Generation details" subtitle={`v${ig.version} · variant ${selected + 1}`} icon="info" onClose={() => setInfo(false)} footer={<Button variant="primary" onClick={() => setInfo(false)}>Close</Button>}>
           <div style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 12, color: SL.ui800, background: SL.ui100, border: `1px solid ${SL.ui300}`, borderRadius: 6, padding: 12, lineHeight: 1.7 }}>
@@ -210,7 +212,7 @@ export default function ImageGenScreen({ fromReview }) {
           <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
             <img src={imgFor(selected)} alt="" style={{ width: 180, aspectRatio: '16/9', objectFit: 'cover', borderRadius: 6 }}/>
             <div style={{ fontSize: 13, color: SL.ui800, lineHeight: 1.6 }}>
-              <div><strong>Variant {selected + 1}</strong> · {VARIANTS[selected].label}</div>
+              <div><strong>Variant {selected + 1}</strong> · {cur.label}</div>
               <div style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 12 }}>vessels/stena-britannica/2026-spring/stena-britannica-route-hero-{selected + 1}.jpg</div>
               <div style={{ color: SL.ui600, fontSize: 12 }}>Alt text, tags, usage rights and AI marking are written with the asset.</div>
             </div>

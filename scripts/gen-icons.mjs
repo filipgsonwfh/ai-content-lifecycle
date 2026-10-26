@@ -11,7 +11,7 @@ const aliases = {
   'minus-circle': 'CircleMinus', 'plus-circle': 'CirclePlus',
 };
 const toPascal = n => n.replace(/(^|-)([a-z0-9])/g, (_, __, c) => c.toUpperCase());
-const names = new Set(['circle-help', 'loader-2', 'alert-triangle', 'lock', 'unlock', 'trash-2', 'unplug', 'plug', 'chevron-up', 'pencil', 'search-x', 'ruler', 'hash', 'monitor', 'code', 'utensils', 'paperclip', 'download', 'filter', 'eye', 'history', 'database', 'zap', 'layers', 'accessibility', 'languages', 'webhook', 'clock', 'inbox', 'sparkles', 'image', 'settings', 'users', 'plus', 'check', 'x', 'info', 'bell', 'search', 'send-horizontal']);
+const names = new Set(['alert-circle', 'minus-circle', 'trending-down', 'alert-triangle', 'circle-help', 'loader-2', 'alert-triangle', 'lock', 'unlock', 'trash-2', 'unplug', 'plug', 'chevron-up', 'pencil', 'search-x', 'ruler', 'hash', 'monitor', 'code', 'utensils', 'paperclip', 'download', 'filter', 'eye', 'history', 'database', 'zap', 'layers', 'accessibility', 'languages', 'webhook', 'clock', 'inbox', 'sparkles', 'image', 'settings', 'users', 'plus', 'check', 'x', 'info', 'bell', 'search', 'send-horizontal']);
 for (const f of files) { const s = readFileSync(f, 'utf8'); for (const m of s.matchAll(/(?:name|icon|iconRight)=["']([a-z0-9-]+)["']/g)) names.add(m[1]); for (const m of s.matchAll(/icon:\s*'([a-z0-9-]+)'/g)) names.add(m[1]); for (const m of s.matchAll(/'([a-z0-9-]+)',\s*'#[0-9a-f]{6}'\)/g)) names.add(m[1]); for (const m of s.matchAll(/\['([a-z0-9-]+)',\s*'(?:ok|warn)'\]/g)) names.add(m[1]); }
 const map = {}; const missing = [];
 for (const n of names) { const c = aliases[n] || toPascal(n); if (L[c]) map[n] = c; else missing.push(n); }

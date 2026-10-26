@@ -102,11 +102,11 @@ export default function QueueScreen() {
         <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: `1px solid ${SL.ui300}`, background: SL.ui100 }}>
           <span style={{ fontSize: 12, color: SL.ui600, marginRight: 4 }}>Channel:</span>
           {['all', ...CHANNEL_KEYS].map(c => (
-            <button key={c} className={`pill-btn ${channelFilter === c ? 'active' : ''}`} onClick={() => setChannelFilter(c)}>{c === 'all' ? 'All' : CHANNELS[c].label}</button>
+            <button key={c} className={`pill-btn ${channelFilter === c ? 'active' : ''}`} onClick={() => { setChannelFilter(c); setSelected([]); }}>{c === 'all' ? 'All' : CHANNELS[c].label}</button>
           ))}
           <div style={{ flex: 1 }}/>
           <span style={{ fontSize: 12, color: SL.ui600 }}>Sort:</span>
-          <select value={sort} onChange={e => setSort(e.target.value)} style={{ border: `1px solid ${SL.ui300}`, borderRadius: 9999, padding: '4px 10px', fontSize: 12, background: '#fff', color: SL.ui700 }}>
+          <select value={sort} onChange={e => { setSort(e.target.value); setSelected([]); }} style={{ border: `1px solid ${SL.ui300}`, borderRadius: 9999, padding: '4px 10px', fontSize: 12, background: '#fff', color: SL.ui700 }}>
             <option value="updated">Last updated</option>
             <option value="priority">Priority</option>
             <option value="id">Brief ID</option>

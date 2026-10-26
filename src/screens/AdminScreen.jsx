@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useStore } from '../store/store.jsx';
 import { useToast } from '../shared/toast.jsx';
 import { navigate } from '../shared/router.js';
@@ -17,7 +17,7 @@ const SECTIONS = [
   { key: 'integrations', label: 'Integrations', icon: 'plug' },
 ];
 
-export default function AdminScreen({ section }) {
+export default function AdminScreen({ section, params = {} }) {
   const { state } = useStore();
   const counts = { channels: CHANNEL_KEYS.length, glossary: state.glossary.length, roles: state.roles.reduce((n, r) => n + r.members.length, 0), integrations: state.integrations.filter(i => i.status !== 'Disconnected').length };
   const valid = SECTIONS.some(s => s.key === section) ? section : 'channels';
@@ -45,7 +45,7 @@ export default function AdminScreen({ section }) {
         {valid === 'tonality' && <TonalityAdmin/>}
         {valid === 'seo' && <SEORulesAdmin/>}
         {valid === 'wcag' && <WCAGAdmin/>}
-        {valid === 'questions' && <QuestionsAdmin/>}
+        {valid === 'questions' && <QuestionsAdmin channelParam={params.channel}/>}
         {valid === 'roles' && <RolesAdmin/>}
         {valid === 'integrations' && <IntegrationsAdmin/>}
       </div>
@@ -349,11 +349,11 @@ function WCAGAdmin() {
 }
 
 // ---------- Brief questions ----------
-function QuestionsAdmin() {
+function QuestionsAdmin({ channelParam }) {
   const { state, dispatch } = useStore();
   const toast = useToast();
-  const initial = new URLSearchParams(window.location.hash.split('?')[1] || '').get('channel');
-  const [channel, setChannel] = useState(CHANNELS[initial] ? initial : 'website');
+  const [channel, setChannel] = useState(CHANNEL_KEYS.includes(channelParam) ? channelParam : 'website');
+  useEffect(() => { if (CHANNEL_KEYS.includes(channelParam)) setChannel(channelParam); }, [channelParam]);
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState(null);
   const list = state.questions[channel];

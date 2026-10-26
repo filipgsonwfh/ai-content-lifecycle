@@ -18,7 +18,7 @@ export function navigate(path) {
 export function useRoute() {
   const [route, setRoute] = useState(() => parseHash());
   useEffect(() => {
-    const onChange = () => { setRoute(parseHash()); window.scrollTo(0, 0); };
+    const onChange = () => { setRoute(prev => { const next = parseHash(); if (next.page !== prev.page || next.id !== prev.id) window.scrollTo(0, 0); return next; }); };
     window.addEventListener('hashchange', onChange);
     return () => window.removeEventListener('hashchange', onChange);
   }, []);

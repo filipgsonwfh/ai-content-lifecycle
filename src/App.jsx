@@ -50,7 +50,7 @@ function Shell() {
       {route.page === 'review' && <ReviewScreen id={route.id}/>}
       {route.page === 'brief' && <BriefAssistantScreen key={route.params.channel || 'new'} initialChannel={route.params.channel}/>}
       {route.page === 'images' && <ImageGenScreen fromReview={route.params.from}/>}
-      {route.page === 'admin' && <AdminScreen section={route.id || 'channels'}/>}
+      {route.page === 'admin' && <AdminScreen section={route.id || 'channels'} params={route.params}/>}
       {!['queue', 'review', 'brief', 'images', 'admin'].includes(route.page) && <QueueScreen/>}
       {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)}/>}
     </>
@@ -68,7 +68,7 @@ function AppBar({ active, onSearch }) {
   useEffect(() => {
     if (!open) return;
     const onDown = (e) => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(null); };
-    const onKey = (e) => { if (e.key === 'Escape') setOpen(null); };
+    const onKey = (e) => { if (e.key === 'Escape' || ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k')) setOpen(null); };
     document.addEventListener('mousedown', onDown); window.addEventListener('keydown', onKey);
     return () => { document.removeEventListener('mousedown', onDown); window.removeEventListener('keydown', onKey); };
   }, [open]);
@@ -98,7 +98,7 @@ function AppBar({ active, onSearch }) {
       </nav>
       <div className="appbar-actions" ref={wrapRef}>
         <Badge tone="orange" icon="flask-conical" title="All numbers, briefs and integrations are sample data">Sample data</Badge>
-        <button className="appbar-search" onClick={onSearch} aria-label="Search (⌘K)">
+        <button className="appbar-search" onClick={() => { setOpen(null); onSearch(); }} aria-label="Search (⌘K)">
           <Icon name="search" size={14}/>
           <span className="placeholder">Search briefs, content, fragments…</span>
           <kbd>⌘K</kbd>

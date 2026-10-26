@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useReducer } from 'react';
+import { createContext, useContext, useEffect, useMemo, useReducer, useRef } from 'react';
 import {
   INITIAL_ITEMS, INITIAL_GLOSSARY, INITIAL_TONALITY, INITIAL_QUESTIONS, INITIAL_SEO, INITIAL_WCAG,
   INITIAL_ROLES, INITIAL_INTEGRATIONS, CHANNEL_CONFIG, INITIAL_NOTIFICATIONS, TEMPLATE_CONTENT_BY_CHANNEL, USER,
@@ -34,13 +34,28 @@ function load() {
     if (!raw) return seedState();
     const parsed = JSON.parse(raw);
     if (!parsed || !Array.isArray(parsed.items)) return seedState();
-    // Re-arm any in-flight simulated transitions shortly after load (virtual clock restarts).
-    parsed.items = parsed.items.map(it => it.transition ? { ...it, transition: { ...it.transition, at: DEMO_NOW + 1500 } } : it);
-    if (parsed.imageGen?.regenerating) parsed.imageGen = { ...parsed.imageGen, regenerating: false };
-    return parsed;
+    return hydrate(parsed);
   } catch {
     return seedState();
   }
+}
+
+// Merge a persisted snapshot over the seed so older/partial shapes are back-filled,
+// and re-arm in-flight transitions with the time they had left (virtual clock restarts on load).
+function hydrate(parsed) {
+  const seed = seedState();
+  const savedAt = typeof parsed.savedAt === 'number' ? parsed.savedAt : DEMO_NOW;
+  const items = parsed.items.map(it => it.transition
+    ? { ...it, transition: { ...it.transition, at: DEMO_NOW + Math.max(600, it.transition.at - savedAt) } }
+    : it);
+  return {
+    ...seed, ...parsed, items,
+    questions: { ...seed.questions, ...(parsed.questions || {}) },
+    channelConfig: { ...seed.channelConfig, ...(parsed.channelConfig || {}) },
+    seo: { ...seed.seo, ...(parsed.seo || {}) },
+    imageGen: { ...seed.imageGen, ...(parsed.imageGen || {}), regenerating: false },
+    nextBriefNo: Number.isFinite(parsed.nextBriefNo) ? parsed.nextBriefNo : seed.nextBriefNo,
+  };
 }
 
 const activity = (who, what, icon, color) => ({ id: uid(), who, what, when: vnow(), icon, color });
@@ -55,6 +70,8 @@ function reducer(state, action) {
   switch (a.type) {
     case 'RESET':
       return seedState();
+    case 'HYDRATE':
+      return hydrate(a.state);
 
     // ---------- Review flow ----------
     case 'ITEM_APPROVE': {
@@ -85,6 +102,7 @@ function reducer(state, action) {
     case 'ITEM_REOPEN':
       return updateItem(state, a.id, i => ({
         ...i, state: 'pending', updatedAt: vnow(), transition: undefined,
+        iterations: i.iterations.map((v, idx) => (idx === 0 ? { ...v, state: 'pending' } : v)),
         activity: [activity(USER.name, 'reopened for review', 'rotate-ccw', '#1178df'), ...i.activity],
       }));
     case 'ITEM_COMMENT':
@@ -114,8 +132,8 @@ function reducer(state, action) {
         const s1 = updateItem(state, a.id, i => ({
           ...i, state: 'pending', regenerating: false, transition: undefined, iter: i.iter + 1, updatedAt: vnow(),
           content, changedFields,
-          iterations: [{ v: i.iter + 1, at: vnow(), state: 'pending', summary, author: 'AI · gpt-4 · v2.4', feedback: t.feedback, prev: prevSnapshot }, ...i.iterations.map((v, idx) => (idx === 0 ? { ...v, state: 'rejected' } : v))],
-          activity: [activity('AI Content Service', `generated ${contentFieldCount(content)} · v${i.iter + 1}`, 'sparkles', '#1178df'), ...i.activity],
+          iterations: [{ v: i.iter + 1, at: vnow(), state: 'pending', summary, author: 'AI · gpt-4 · v2.4', feedback: t.feedback, prev: prevSnapshot, generated: content, unchanged: changedFields.length === 0 }, ...i.iterations.map((v, idx) => (idx === 0 && ['pending', 'iterating'].includes(v.state) ? { ...v, state: 'rejected' } : v))],
+          activity: [activity('AI Content Service', changedFields.length ? `generated ${contentFieldCount(content)} · v${i.iter + 1}` : `re-validated ${contentFieldCount(content)} · v${i.iter + 1} · no copy changes`, 'sparkles', '#1178df'), ...i.activity],
         }));
         return { ...s1, notifications: [notif(`${it.id} regenerated (v${it.iter + 1})`, summary, { type: 'review', id: it.id }), ...s1.notifications] };
       }
@@ -151,7 +169,7 @@ function reducer(state, action) {
         id, title: a.title, channel: a.channel, type: a.briefType || 'new', state: 'queued', priority: a.priority || 'Medium', iter: 0,
         langs: a.langs || 1, requester: { name: USER.name, role: USER.role }, createdAt: vnow(), updatedAt: vnow(),
         brief: { ...a.brief, mondayId: `${7800 + state.nextBriefNo - 2400} · #${a.channel}` },
-        content: JSON.parse(JSON.stringify(tpl)),
+        content: (() => { const c = JSON.parse(JSON.stringify(tpl)); if ((a.briefType || 'new') === 'new' && c.fields) c.fields = c.fields.map(({ before, ...f }) => f); return c; })(),
         iterations: [], comments: [],
         activity: [activity(USER.name, 'created via Brief Assistant · set status: Ready to be picked up', 'check', '#509e27')],
         transition: { to: 'generating', at: vnow() + 1800 },
@@ -231,7 +249,7 @@ function reducer(state, action) {
       return { ...state, imageGen: { ...state.imageGen, regenerating: true, approved: null } };
     case 'IMG_REGEN_DONE': {
       const order = [...state.imageGen.order].sort(() => Math.random() - 0.5);
-      return { ...state, imageGen: { ...state.imageGen, regenerating: false, version: state.imageGen.version + 1, order, variant: 0, history: [{ v: state.imageGen.version, prompt: state.imageGen.prompt, at: vnow() }, ...state.imageGen.history] } };
+      return { ...state, imageGen: { ...state.imageGen, regenerating: false, version: state.imageGen.version + 1, order, history: [{ v: state.imageGen.version, prompt: state.imageGen.prompt, at: vnow() }, ...state.imageGen.history] } };
     }
     case 'IMG_APPROVE': {
       const approved = { variant: state.imageGen.variant, version: state.imageGen.version, at: vnow(), path: `vessels/stena-britannica/2026-spring/stena-britannica-route-hero-${state.imageGen.variant + 1}.jpg` };
@@ -249,18 +267,31 @@ export function StoreProvider({ children }) {
 
   // Persist (skip transient flags)
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* quota or private mode: ignore */ }
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, savedAt: vnow() })); } catch { /* quota or private mode: ignore */ }
   }, [state]);
 
-  // Simulation clock: advance due transitions. Interval is owned here, so route changes never leak timers.
+  // Another tab wrote state: adopt it (last writer wins, same as a real backend would).
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key !== STORAGE_KEY || !e.newValue) return;
+      try { const parsed = JSON.parse(e.newValue); if (parsed && Array.isArray(parsed.items)) dispatch({ type: 'HYDRATE', state: parsed }); } catch { /* ignore */ }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
+  // Simulation clock: advance due transitions. One interval for the app's lifetime; reads the latest items via a ref.
+  const itemsRef = useRef(state.items);
+  itemsRef.current = state.items;
   useEffect(() => {
     const due = () => {
+      if (document.visibilityState !== 'visible') return; // only the visible tab advances the simulation
       const now = vnow();
-      state.items.forEach(it => { if (it.transition && it.transition.at <= now) dispatch({ type: 'ITEM_TRANSITION', id: it.id }); });
+      itemsRef.current.forEach(it => { if (it.transition && it.transition.at <= now) dispatch({ type: 'ITEM_TRANSITION', id: it.id }); });
     };
     const id = setInterval(due, 400);
     return () => clearInterval(id);
-  }, [state.items]);
+  }, []);
 
   const value = useMemo(() => ({ state, dispatch }), [state]);
   return <StoreCtx.Provider value={value}>{children}</StoreCtx.Provider>;

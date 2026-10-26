@@ -136,7 +136,7 @@ export default function ReviewScreen({ id }) {
                   </div>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                     <textarea value={feedback} onChange={e => setFeedback(e.target.value)} disabled={item.regenerating}
-                      onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') regenerate(); }}
+                      onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); regenerate(); } }}
                       placeholder={'Tighten the hero copy, drop the 06:55 mention from the meta, and use "spring fares" instead of "spring offers"…'}
                       style={{ flex: 1, minHeight: 72, resize: 'vertical', border: `1px solid ${SL.ui400}`, borderRadius: 6, padding: '10px 12px', fontSize: 14, outline: 'none', color: SL.ui900 }}/>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -329,7 +329,7 @@ function EditableText({ value, onSave, editable, limit, tone = 'muted', large })
     return (
       <div>
         <textarea className="inline-edit" value={draft} autoFocus rows={Math.max(2, Math.ceil(draft.length / 70))} onChange={e => setDraft(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Escape') { setEditing(false); setDraft(value); } if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && !over) { onSave(draft); setEditing(false); } }}/>
+          onKeyDown={e => { if (e.key === 'Escape') { setEditing(false); setDraft(value); } if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && !over) { e.preventDefault(); onSave(draft); setEditing(false); } }}/>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
           <span style={{ fontSize: 11, color: over ? SL.sjobod : SL.ui600 }}>{draft.length}{limit ? `/${limit}` : ''}{over ? ' · over limit' : ''}</span>
           <div style={{ flex: 1 }}/>
@@ -368,7 +368,7 @@ function FieldHeader({ name, meta, changed, length, limit, edited, badge }) {
 // ---------- Website diff ----------
 function WebsiteDiffPanel({ item, changedOnly, setChangedOnly, activeLang, setActiveLang, langs, editable, dispatch }) {
   const { content } = item;
-  const isUpdate = content.fields.some(f => f.before !== undefined);
+  const isUpdate = item.type === 'update' && content.fields.some(f => f.before !== undefined);
   const changedCount = content.fields.filter(f => f.before !== undefined && f.before !== f.after).length;
   const recent = new Set(item.changedFields || []);
   const fields = content.fields.map((f, i) => ({ ...f, i })).filter(f => !changedOnly || f.before === undefined || f.before !== f.after);
@@ -810,6 +810,7 @@ function IterationHistory({ item, onDiff }) {
               <span style={{ fontSize: 14, fontWeight: 500, color: SL.ui900 }}>Version {it.v}</span>
               <StatusPill state={it.state}/>
               {i === 0 && <Badge tone="neutral">Current</Badge>}
+              {it.unchanged && <Badge tone="orange" icon="info">No copy changes</Badge>}
               <span style={{ fontSize: 12, color: SL.ui600 }}>· {relativeTime(it.at)}</span>
             </div>
             <div style={{ fontSize: 13, color: SL.ui800, marginTop: 4, lineHeight: 1.5 }}>{it.summary}</div>
@@ -825,7 +826,7 @@ function IterationHistory({ item, onDiff }) {
 
 function DiffModal({ item, iteration, onClose }) {
   const prev = iteration.prev;
-  const cur = item.iterations[0].v === iteration.v ? item.content : (item.iterations[item.iterations.findIndex(x => x.v === iteration.v) - 1]?.prev || item.content);
+  const cur = iteration.generated || (item.iterations[0].v === iteration.v ? item.content : (item.iterations[item.iterations.findIndex(x => x.v === iteration.v) - 1]?.prev || item.content));
   const rows = [];
   if (prev.fields) prev.fields.forEach((f, i) => { const a = f.after ?? f.value; const b = cur.fields[i]?.after ?? cur.fields[i]?.value; if (a !== b) rows.push({ name: f.name, a, b }); });
   if (prev.posts) prev.posts.forEach((p, i) => { if (p.caption !== cur.posts[i]?.caption) rows.push({ name: p.platform, a: p.caption, b: cur.posts[i]?.caption }); });

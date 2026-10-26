@@ -3,7 +3,7 @@ import { useStore } from '../store/store.jsx';
 import { useToast } from '../shared/toast.jsx';
 import { navigate } from '../shared/router.js';
 import { PageShell, SectionHeader, Button, Badge, Icon } from '../shared/ui.jsx';
-import { SL, CHANNELS } from '../shared/theme.js';
+import { SL, CHANNELS, CHANNEL_KEYS } from '../shared/theme.js';
 import { ASSISTANT_SUGGESTIONS, USER } from '../shared/data.js';
 import { DEMO_NOW } from '../shared/time.js';
 
@@ -27,34 +27,39 @@ const INVISIBLE = {
 export default function BriefAssistantScreen({ initialChannel }) {
   const { state, dispatch } = useStore();
   const toast = useToast();
-  const [channel, setChannel] = useState(initialChannel && CHANNELS[initialChannel] ? initialChannel : null);
+  const [channel, setChannel] = useState(CHANNEL_KEYS.includes(initialChannel) ? initialChannel : null);
   const [answers, setAnswers] = useState({});
   const [idx, setIdx] = useState(0); // index of current question
   const [draft, setDraft] = useState('');
   const [typing, setTyping] = useState(false);
   const [submitted, setSubmitted] = useState(null);
   const scrollRef = useRef(null);
+  const timer = useRef(null);
+  const later = (fn, ms) => { clearTimeout(timer.current); timer.current = setTimeout(fn, ms); };
+  useEffect(() => () => clearTimeout(timer.current), []);
 
   const questions = channel ? state.questions[channel] : [];
   const current = questions[idx];
-  const done = channel && idx >= questions.length;
+  const noQuestions = !!channel && questions.length === 0;
+  const done = channel && !noQuestions && idx >= questions.length;
 
   useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [idx, typing, channel, submitted]);
 
-  const pickChannel = (c) => { setChannel(c); setTyping(true); setTimeout(() => setTyping(false), 600); };
+  const pickChannel = (c) => { setChannel(c); setTyping(true); later(() => setTyping(false), 600); };
   const answer = (text) => {
     if (!current) return;
     setAnswers(a => ({ ...a, [current.id]: text }));
     setDraft('');
     setTyping(true);
-    setTimeout(() => { setTyping(false); setIdx(i => i + 1); }, current.id === 'wq2' ? 1100 : 650);
+    later(() => { setTyping(false); setIdx(i => i + 1); }, current.id === 'wq2' ? 1100 : 650);
   };
   const skip = () => { if (current && !current.mandatory) answer('—'); };
-  const reset = () => { setChannel(null); setAnswers({}); setIdx(0); setDraft(''); setSubmitted(null); };
+  const reset = () => { clearTimeout(timer.current); setTyping(false); setChannel(null); setAnswers({}); setIdx(0); setDraft(''); setSubmitted(null); };
 
   const title = useMemo(() => {
     if (!channel) return '';
-    const by = (fieldName) => { const q = questions.find(x => FIELD_MAP[x.id] === fieldName); return q ? answers[q.id] : null; };
+    const live = (v) => (v && v !== '—' ? v : null);
+    const by = (fieldName) => { const q = questions.find(x => FIELD_MAP[x.id] === fieldName); return q ? live(answers[q.id]) : null; };
     const trunc = (s, n = 58) => (s && s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s);
     if (channel === 'website') {
       const url = by('pageUrl');
@@ -62,7 +67,7 @@ export default function BriefAssistantScreen({ initialChannel }) {
       const isUpdate = /update/i.test(answers.wq1 || '');
       return slug ? `${slug.replace(/\b\w/g, c => c.toUpperCase())} — ${isUpdate ? 'page update' : 'new page'}` : `New website page — ${trunc(by('audience') || 'brief', 40)}`;
     }
-    const core = by('keyMessage') || by('message') || by('screen') || Object.values(answers)[0];
+    const core = by('keyMessage') || by('message') || by('screen') || Object.values(answers).map(live).find(Boolean);
     return `${CHANNELS[channel].label} — ${trunc(core || 'new brief')}`;
   }, [channel, answers, questions]);
 
@@ -146,6 +151,12 @@ export default function BriefAssistantScreen({ initialChannel }) {
               </div>
             ))}
             {typing && <Typing/>}
+            {noQuestions && !typing && (
+              <Bubble>
+                No questions are configured for {CHANNELS[channel].label} yet, so I can't build a brief. Add some under Admin → Brief questions.
+                <div style={{ marginTop: 10 }}><Button size="sm" variant="primary" icon="settings" onClick={() => navigate(`admin/questions?channel=${channel}`)}>Configure questions</Button></div>
+              </Bubble>
+            )}
             {done && !typing && (
               <Bubble>
                 <div style={{ marginBottom: 8 }}>That's everything I need. Here's the brief as it will appear in Monday.com:</div>

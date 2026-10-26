@@ -70,7 +70,9 @@ export function regenerateContent(content, feedback, iter) {
   const unique = [...new Set(notes)];
   const summary = unique.length
     ? unique[0][0].toUpperCase() + unique.join(', ').slice(1) + '.'
-    : 'Rephrased for variety while keeping all key messages and glossary terms.';
+    : changed.size
+      ? 'Rephrased for variety while keeping all key messages and glossary terms.'
+      : 'Feedback did not point at any field — copy re-validated against tonality, glossary and limits; no changes made.';
   return { content: next, summary, changedFields: [...changed] };
 }
 
