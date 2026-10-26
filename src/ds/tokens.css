@@ -1,0 +1,348 @@
+/* ============================================================
+   Stena Line Design System — colors_and_type.css
+   Source of truth: github.com/StenaIT/stenajs-webui (theme pkg)
+   ============================================================ */
+
+/* ---------- Stena Sans webfont ---------- */
+@font-face { font-display: swap; font-family: "Stena Sans"; src: url("./fonts/StenaSans-Light.woff2") format("woff2"); font-weight: 300; font-style: normal; }
+@font-face { font-display: swap; font-family: "Stena Sans"; src: url("./fonts/StenaSans-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+@font-face { font-display: swap; font-family: "Stena Sans"; src: url("./fonts/StenaSans-Medium.woff2") format("woff2"); font-weight: 500; font-style: normal; }
+@font-face { font-display: swap; font-family: "Stena Sans"; src: url("./fonts/StenaSans-Bold.woff2") format("woff2"); font-weight: 700; font-style: normal; }
+@font-face { font-display: swap; font-family: "Stena Sans"; src: url("./fonts/StenaSans-Black.woff2") format("woff2"); font-weight: 800; font-style: normal; }
+
+:root {
+  /* Stena uses 62.5% root so 1rem = 10px. Components use rems for type. */
+  /* Set this on the html element when adopting the system. */
+
+  /* ============================================================
+     BRAND COLORS — Swedish-named, the heart of the palette
+     ============================================================ */
+  --black:           #000000;
+  --core-blue:       #004a93;   /* Primary brand blue */
+  --modern-blue:     #1178df;   /* Action / link */
+  --mussla:          #122f66;   /* Deep "mussel" blue, hover */
+  --hav:             rgb(26, 90, 154);    /* "Sea" */
+  --hav-30:          rgba(26, 90, 154, 0.3);
+  --himmel:          #b4d4f9;   /* "Sky" */
+  --himmel-light:    #cae2fb;
+  --himmel-lighter:  #e1edfd;
+
+  --modern-red:      rgb(234, 20, 61);
+  --sjobod:          rgb(176, 15, 46);    /* "Boathouse" red */
+  --tang:            #80091b;             /* "Seaweed" deep red */
+  --snackskal:       #fbd4cd;             /* "Seashell" pink */
+  --snackskal-light: #fce1db;
+
+  --modern-green:    rgb(116, 179, 70);
+
+  --sand:            rgb(250, 246, 235);  /* Warm neutral */
+  --sand-dark:       rgba(155, 147, 123, 1);
+  --sand-dark-10:    rgba(155, 147, 123, 0.1);
+  --sand-dark-20:    rgba(155, 147, 123, 0.2);
+
+  --moln:            rgb(255, 255, 255);  /* "Cloud" */
+  --molnigare:       rgb(250, 250, 248);  /* "Cloudier" off-white */
+  --tjara:           rgb(51, 51, 51);     /* "Tar" */
+
+  --silver:          #949494;
+  --silver-light:    #c9c9c9;
+  --silver-lighter:  #f4f4f4;
+  --silver-ui:       #ebebeb;
+  --silver-dark:     #6b6b6b;
+
+  /* Extended Fares Pricing accents */
+  --efp-economy:     var(--sjobod);
+  --efp-flexi:       var(--hav);
+  --efp-premium:     #e7ae2f;
+
+  /* ============================================================
+     LHDS COLOR SCALES — 50–900 ramps for systematic use
+     ============================================================ */
+  --lhds-color-blue-50:  var(--himmel-lighter);
+  --lhds-color-blue-100: var(--himmel-light);
+  --lhds-color-blue-200: var(--himmel);
+  --lhds-color-blue-300: #6ca9e6;
+  --lhds-color-blue-400: #3a8cdd;
+  --lhds-color-blue-500: var(--modern-blue);
+  --lhds-color-blue-600: var(--core-blue);
+  --lhds-color-blue-700: #18518a;
+  --lhds-color-blue-800: var(--mussla);
+  --lhds-color-blue-900: #0f304d;
+
+  --lhds-color-green-50:  #f4fbf0;
+  --lhds-color-green-100: #d1efc1;
+  --lhds-color-green-200: #aee492;
+  --lhds-color-green-300: #8ad861;
+  --lhds-color-green-400: #6cce38;
+  --lhds-color-green-500: #60bd2f;
+  --lhds-color-green-600: #509e27;
+  --lhds-color-green-700: #407e1f;
+  --lhds-color-green-800: #305f18;
+  --lhds-color-green-900: #284f14;
+
+  --lhds-color-orange-50:  #fff8eb;
+  --lhds-color-orange-100: #ffe184;
+  --lhds-color-orange-200: #ffd656;
+  --lhds-color-orange-300: #ffc400;
+  --lhds-color-orange-400: #ffb633;
+  --lhds-color-orange-500: #ffa400;
+  --lhds-color-orange-600: #eb9700;
+  --lhds-color-orange-700: #d88b00;
+  --lhds-color-orange-800: #b17200;
+  --lhds-color-orange-900: #895800;
+
+  --lhds-color-red-50:  #fff1f4;
+  --lhds-color-red-100: var(--snackskal-light);
+  --lhds-color-red-200: var(--snackskal);
+  --lhds-color-red-300: #ff4e70;
+  --lhds-color-red-400: #f1002e;
+  --lhds-color-red-500: #d70029;
+  --lhds-color-red-600: var(--sjobod);
+  --lhds-color-red-700: var(--tang);
+  --lhds-color-red-800: #710015;
+  --lhds-color-red-900: #570010;
+
+  --lhds-color-turquoise-50:  #eafbf9;
+  --lhds-color-turquoise-100: #daf8f4;
+  --lhds-color-turquoise-200: #b9f2e9;
+  --lhds-color-turquoise-300: #87e8da;
+  --lhds-color-turquoise-400: #46dcc6;
+  --lhds-color-turquoise-500: #28d2b9;
+  --lhds-color-turquoise-600: #24bda6;
+  --lhds-color-turquoise-700: #1c9280;
+  --lhds-color-turquoise-800: #156f62;
+  --lhds-color-turquoise-900: #125f53;
+
+  --lhds-color-ui-50:  #ffffff;
+  --lhds-color-ui-100: #fafafb;
+  --lhds-color-ui-200: var(--silver-lighter);
+  --lhds-color-ui-300: var(--silver-ui);
+  --lhds-color-ui-400: var(--silver-light);
+  --lhds-color-ui-500: var(--silver);
+  --lhds-color-ui-600: #5c6171;
+  --lhds-color-ui-700: #424551;
+  --lhds-color-ui-800: #282931;
+  --lhds-color-ui-900: var(--black);
+
+  /* ============================================================
+     SEMANTIC TOKENS (swui-) — what components actually consume
+     ============================================================ */
+  --swui-white: #fff;
+  --swui-hidden: rgba(0, 0, 0, 0);
+
+  /* Primary action — the bread and butter button color */
+  --swui-primary-action-color:           var(--core-blue);
+  --swui-primary-action-color-hover:     var(--mussla);
+  --swui-primary-action-color-focus:     var(--modern-blue);
+  --swui-primary-action-color-active:    var(--lhds-color-blue-900);
+  --swui-primary-action-color-disabled:  var(--lhds-color-ui-300);
+
+  /* State colors */
+  --swui-state-error-color:        var(--lhds-color-red-300);
+  --swui-state-error-light-color:  var(--lhds-color-red-100);
+  --swui-state-alert-color:        var(--lhds-color-orange-400);
+  --swui-state-alert-light-color:  var(--lhds-color-orange-100);
+  --swui-state-success-color:      var(--lhds-color-green-600);
+  --swui-state-success-light-color:var(--lhds-color-green-100);
+  --swui-state-modified-color:     var(--lhds-color-blue-500);
+  --swui-state-modified-light-color: var(--lhds-color-blue-100);
+  --swui-state-loading-color:      var(--lhds-color-ui-400);
+  --swui-state-loading-light-color:var(--lhds-color-ui-100);
+
+  --swui-separator-color: var(--lhds-color-ui-300);
+  --swui-overlay-bg-color: rgba(13, 14, 16, 0.5);
+  --swui-overlay-bg-color-light: rgba(255, 255, 255, 0.7);
+
+  /* Text */
+  --swui-text-primary-color:        var(--lhds-color-ui-900);
+  --swui-text-primary-color-light:  var(--lhds-color-ui-400);
+  --swui-text-action-color:         var(--lhds-color-blue-600);
+  --swui-text-action-color-hover:   var(--lhds-color-blue-500);
+  --swui-text-action-color-focus:   var(--lhds-color-blue-500);
+  --swui-text-action-color-active:  var(--lhds-color-blue-700);
+  --swui-text-disabled-color:       var(--lhds-color-ui-600);
+  --swui-text-disabled-color-light: var(--lhds-color-ui-300);
+
+  /* ============================================================
+     TYPOGRAPHY
+     ============================================================ */
+  --swui-font-primary: "Stena Sans", "Open Sans", Arial, sans-serif;
+  --swui-font-buttons: var(--swui-font-primary);
+  --swui-font-input:   var(--swui-font-primary);
+
+  --swui-font-weight-text:        400;
+  --swui-font-weight-text-bold:   500;
+  --swui-font-weight-link:        400;
+  --swui-font-weight-inputs:      400;
+
+  --swui-line-height: 1.5;
+  /* Component sizes are rem on a 62.5% root → 1rem = 10px */
+  --swui-font-size-smaller: 1.2rem;   /* 12px */
+  --swui-font-size-small:   1.4rem;   /* 14px */
+  --swui-font-size-medium:  1.6rem;   /* 16px */
+  --swui-font-size-large:   1.8rem;   /* 18px */
+  --swui-font-size-inputs:        1.6rem;
+  --swui-font-size-inputs-large:  2rem;
+
+  --swui-line-height-smaller: var(--swui-line-height);
+  --swui-line-height-small:   var(--swui-line-height);
+  --swui-line-height-medium:  var(--swui-line-height);
+  --swui-line-height-large:   var(--swui-line-height);
+
+  --swui-text-letter-spacing: 0;
+
+  /* ============================================================
+     SHAPE & SHADOW
+     ============================================================ */
+  --swui-border-radius-small: 4px;
+  --swui-border-radius:       8px;
+  --swui-border-radius-large: 16px;
+  --swui-max-border-radius:   10000px;     /* pill */
+
+  --swui-shadow-modal:    rgba(0, 0, 0, 0.2) 0px 0px 10px 4px;
+  --swui-shadow-popover:  0 2px 4px -1px rgba(20, 62, 98, 0.15),
+                          0 1px 10px 0 rgba(0, 0, 0, 0.12);
+  --swui-shadow-box:      0 3px 1px -2px rgba(0, 0, 0, 0.15),
+                          0 0 4px 0 rgba(0, 0, 0, 0.15);
+  --swui-shadow-bottom:   rgba(0, 0, 0, 0.2) 0 5px 5px -4px;
+  --swui-sticky-footer-shadow: 0px -2px 4px 0px rgba(0, 0, 0, 0.1),
+                               0px 0px 1px 0px rgba(0, 0, 0, 0.2);
+
+  /* ============================================================
+     SPACING & METRICS — 8px grid
+     ============================================================ */
+  --swui-metrics-indent:     8px;
+  --swui-metrics-spacing:    8px;
+  --swui-metrics-space:      8px;
+  --swui-metrics-space-half: 4px;
+  --swui-default-item-height: 40px;
+
+  /* ============================================================
+     ANIMATION
+     ============================================================ */
+  --swui-animation-time-fast:   0.1s;
+  --swui-animation-time-medium: 0.25s;
+  --swui-animation-time-slow:   0.5s;
+
+  /* Focus */
+  --swui-focus-outline-width: 2px;
+  --swui-focus-outline: var(--swui-focus-outline-width) solid var(--modern-blue);
+
+  /* ============================================================
+     SEMANTIC ROLE TOKENS — convenience aliases
+     ============================================================ */
+  --fg-1: var(--swui-text-primary-color);
+  --fg-2: var(--lhds-color-ui-700);
+  --fg-3: var(--lhds-color-ui-600);
+  --fg-disabled: var(--swui-text-disabled-color);
+  --fg-action: var(--swui-text-action-color);
+
+  --bg-canvas: var(--molnigare);
+  --bg-surface: var(--swui-white);
+  --bg-subtle:  var(--lhds-color-ui-100);
+  --bg-muted:   var(--lhds-color-ui-200);
+  --bg-brand:   var(--core-blue);
+  --bg-brand-deep: var(--mussla);
+}
+
+/* ============================================================
+   SEMANTIC TYPE — drop-in styles for h1…p / code / small
+   ============================================================ */
+html { font-size: 62.5%; }       /* 1rem = 10px */
+
+body, .ds-body {
+  font-family: var(--swui-font-primary);
+  font-size: var(--swui-font-size-medium);   /* 16px */
+  line-height: var(--swui-line-height);
+  color: var(--swui-text-primary-color);
+  font-weight: var(--swui-font-weight-text);
+  background: var(--bg-canvas);
+}
+
+.ds-display, h1.ds-display {
+  font-family: var(--swui-font-primary);
+  font-weight: 800;             /* Black */
+  font-size: 5.6rem;            /* 56px */
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--core-blue);
+}
+
+h1, .ds-h1 {
+  font-family: var(--swui-font-primary);
+  font-weight: 700;
+  font-size: 4rem;              /* 40px */
+  line-height: 1.15;
+  color: var(--swui-text-primary-color);
+  letter-spacing: -0.005em;
+}
+
+h2, .ds-h2 {
+  font-family: var(--swui-font-primary);
+  font-weight: 700;
+  font-size: 2.8rem;            /* 28px */
+  line-height: 1.25;
+  color: var(--swui-text-primary-color);
+}
+
+h3, .ds-h3 {
+  font-family: var(--swui-font-primary);
+  font-weight: 500;
+  font-size: 2rem;              /* 20px */
+  line-height: 1.3;
+  color: var(--swui-text-primary-color);
+}
+
+h4, .ds-h4 {
+  font-family: var(--swui-font-primary);
+  font-weight: 500;
+  font-size: 1.6rem;
+  line-height: 1.4;
+  color: var(--swui-text-primary-color);
+  text-transform: none;
+}
+
+p, .ds-p {
+  font-family: var(--swui-font-primary);
+  font-size: 1.6rem;
+  line-height: 1.5;
+  color: var(--swui-text-primary-color);
+}
+
+.ds-lead {
+  font-size: 1.8rem;
+  line-height: 1.5;
+  color: var(--lhds-color-ui-700);
+  font-weight: 400;
+}
+
+small, .ds-small {
+  font-size: 1.2rem;
+  line-height: 1.5;
+  color: var(--lhds-color-ui-600);
+}
+
+a, .ds-link {
+  color: var(--swui-text-action-color);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: var(--swui-font-weight-link);
+}
+a:hover { color: var(--swui-text-action-color-hover); }
+
+code, kbd, .ds-mono {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 1.4rem;
+  background: var(--lhds-color-ui-200);
+  padding: 1px 6px;
+  border-radius: var(--swui-border-radius-small);
+  color: var(--lhds-color-ui-800);
+}
+
+.ds-eyebrow {
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--swui-text-action-color);
+}
